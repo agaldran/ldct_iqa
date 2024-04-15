@@ -26,4 +26,4 @@ Performance Metrics for Probabilistic Ordinal Classifiers
 Adrian Galdran, MICCAI 2024 [link](https://arxiv.org/abs/2309.08701)
 ```
 
-
+A separate jupyter notebook illustrate how the RPS loss works.
