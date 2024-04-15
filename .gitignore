@@ -1,0 +1,29 @@
+# Ignore python local caching files
+__pycache__
+**.idea
+# Ignore notebook checkpoints
+**.ipynb_checkpoints
+#**.ipynb
+# Vim files and python caches
+*~
+*.swp
+*.pyc
+
+
+*.tar.gz
+*.zip
+*.pth
+*.pt
+*.npy
+*.npz
+*.pdf
+*.mp4
+*.tif
+
+vis/
+#data/
+other/
+logs/
+# experiments/
+
+
