@@ -66,8 +66,6 @@ def get_args_parser():
     parser.add_argument('--random_heads', type=str2bool, nargs='?', const=True, default=True, help='Random head-class distribution')
     parser.add_argument('--overall_loss', type=str, default='ce', help='overall loss on top of head losses')
     parser.add_argument('--hypar', type=float, default=-1, help='some overall losses have hyper-parameter, set -1 for their defaults')
-
-    parser.add_argument('--pretrained', type=str2bool, nargs='?', const=True, default=True, help='use imagenet weights')
     parser.add_argument('--cycle_lens', type=str, default='10/5', help='cycling config (nr cycles/cycle len)')
 
     parser.add_argument('--opt', default='nadam', type=str, choices=('sgd', 'adamw', 'nadam'), help='optimizer to use (sgd | adamW | nadam)')
@@ -302,7 +300,7 @@ def main(args):
         train_loader.dataset.normalize.mean, train_loader.dataset.normalize.std = (0.5, 0.5, 0.5), (0.5, 0.5, 0.5)
         val_loader.dataset.normalize.mean, val_loader.dataset.normalize.std = (0.5, 0.5, 0.5), (0.5, 0.5, 0.5)
     # Prepare model for training
-    model = get_arch(args.model, num_classes, n_heads, pretrained=args.pretrained)
+    model = get_arch(args.model, num_classes, n_heads)
 
     model.to(device)
 
