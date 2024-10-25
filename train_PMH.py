@@ -58,14 +58,16 @@ def get_args_parser():
             raise argparse.ArgumentTypeError('boolean value expected.')
 
     parser = argparse.ArgumentParser(description='Training for Biomedical Image Classification')
-    parser.add_argument('--csv_train', type=str, default='data/train_f1.csv', help='path to training data csv')
-    parser.add_argument('--data_path', type=str, default='data/LDCTIQAG2023_train/image', help='path to training images')
+    parser.add_argument('--csv_train', type=str, default='data/train.csv', help='path to training data csv')
+    parser.add_argument('--data_path', type=str, default='data/LDCTIQAG_train_test/images', help='path to training images')
     parser.add_argument('--model', type=str, default='resnet18', help='architecture')
     parser.add_argument('--n_heads', type=int, default=1, help='if greater than 1, use NHeads Ensemble Learning')
     parser.add_argument('--balanced_mh', type=str2bool, nargs='?', const=True, default=False, help='Balance loss on heads')
     parser.add_argument('--random_heads', type=str2bool, nargs='?', const=True, default=True, help='Random head-class distribution')
     parser.add_argument('--overall_loss', type=str, default='ce', help='overall loss on top of head losses')
     parser.add_argument('--hypar', type=float, default=-1, help='some overall losses have hyper-parameter, set -1 for their defaults')
+
+    parser.add_argument('--pretrained', type=str2bool, nargs='?', const=True, default=True, help='use imagenet weights')
     parser.add_argument('--cycle_lens', type=str, default='10/5', help='cycling config (nr cycles/cycle len)')
 
     parser.add_argument('--opt', default='nadam', type=str, choices=('sgd', 'adamw', 'nadam'), help='optimizer to use (sgd | adamW | nadam)')
@@ -204,11 +206,13 @@ def train_model(model, optimizer, ce_weights, overall_criterion, train_loader, v
             vl_preds, vl_probs, vl_labels, vl_loss = run_one_epoch(model, None, np.ones_like(ce_weights), overall_criterion, val_loader, assess=True)
 
         if save_path is not None:
-            print_conf = True
+            print_conf = False
             text_file_train = osp.join(save_path,'performance_cycle_{}.txt'.format(str(cycle+1).zfill(2)))
             text_file_val = osp.join(save_path, 'performance_cycle_{}.txt'.format(str(cycle+1).zfill(2)))
 
-
+        # print(tr_labels.shape, tr_preds.shape, tr_probs.shape)
+        # print(np.unique(tr_labels), np.unique(tr_preds))
+        # sys.exit()
         tr_auc, tr_mcc, tr_acc, tr_auc_all = evaluate_cls(tr_labels, tr_preds, tr_probs, print_conf=print_conf,
                                                               class_names=class_names, text_file=text_file_train, loss=tr_loss)
         vl_auc, vl_mcc, vl_acc, vl_auc_all = evaluate_cls(vl_labels, vl_preds, vl_probs, print_conf=print_conf,
@@ -294,7 +298,9 @@ def main(args):
     csv_val = csv_train.replace('train', 'val')
 
     train_loader, val_loader = get_class_loaders(csv_train, csv_val, args.data_path, tg_size, args.batch_size, args.num_workers)
-    num_classes = len(train_loader.dataset.classes)
+    num_classes = len(np.unique(train_loader.dataset.targets))
+
+
     n_heads = args.n_heads
     if args.model=='bit_resnext50_1':
         train_loader.dataset.normalize.mean, train_loader.dataset.normalize.std = (0.5, 0.5, 0.5), (0.5, 0.5, 0.5)
@@ -405,3 +411,4 @@ def main(args):
 if __name__ == "__main__":
     args = get_args_parser()
     main(args)
+
